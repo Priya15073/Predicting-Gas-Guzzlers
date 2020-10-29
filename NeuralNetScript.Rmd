@@ -1,0 +1,64 @@
+---
+title: "Predict Gas Guzzlers using a Neural Net Model on the MPG Data Set"
+author: "Priya"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+Loading libraries needed
+```{r}
+library(neuralnet)
+
+```
+
+
+Create a Data Frame
+We will use the dataset mtcars.
+We're going to create a new variable called mpg2.  If the car has greater than 22 mpg that it's a one.  If less than 0.  This creates a binary variable, which we can use in the NN.
+
+```{r}
+hist(mtcars$mpg)
+mtcars$mpg2 <- ifelse(mtcars$mpg > 22,1,0)
+data <- mtcars
+rows <- sample(1:nrow(data), nrow(data) * .7, replace = F)
+train <- data[rows,]
+test <- data[-rows,]
+```
+
+Creating a neural net model
+We are going to use all the variables. It is also a logistic neural net model.
+
+```{r}
+set.seed(222)
+model <- neuralnet(mpg2 ~ ., train,
+                  act.fct = "logistic", linear.output = F )
+?neuralnet
+```
+
+We can also plot the model to see the structure of neuralnet
+
+```{r}
+plot(model)
+```
+
+
+Testing the model
+We call the compute method to test the model on our test set.
+
+
+```{r}
+
+predict <- neuralnet::compute(model, test)
+predict
+```
+
+Creating Confusion matrix
+
+```{r}
+results <- ifelse(predict$net.result > .5, 1,0)
+
+table(results, test$mpg2)
+```
+
